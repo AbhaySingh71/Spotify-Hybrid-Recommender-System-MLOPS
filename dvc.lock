@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  data_cleaning:
+    cmd: python data_cleaning.py
+    deps:
+    - path: data/Music Info.csv
+      hash: md5
+      md5: e63b74919a3cdada5c804df4666391c9
+      size: 14985870
+    - path: data_cleaning.py
+      hash: md5
+      md5: d558cab854e863fa6657d62b2b3738c9
+      size: 2098
+    outs:
+    - path: data/cleaned_data.csv
+      hash: md5
+      md5: ad73ab9b7c97fed0f3cc26fc9b24f8c6
+      size: 13712182
+  transform_data:
+    cmd: python content_based_filtering.py
+    deps:
+    - path: content_based_filtering.py
+      hash: md5
+      md5: 79fb70c663fca337227ebcc417c21cdb
+      size: 7186
+    - path: data/cleaned_data.csv
+      hash: md5
+      md5: ad73ab9b7c97fed0f3cc26fc9b24f8c6
+      size: 13712182
+    - path: data_cleaning.py
+      hash: md5
+      md5: d558cab854e863fa6657d62b2b3738c9
+      size: 2098
+    outs:
+    - path: data/transformed_data.npz
+      hash: md5
+      md5: e8d5f3f3cb84de06915ddbedc0e3e7c4
+      size: 4523508
+    - path: transformer.joblib
+      hash: md5
+      md5: 39802fa682d6eeea1aa30cac713c0ebb
+      size: 193567
