@@ -8,4 +8,5 @@ dependencies = [
     "category-encoders>=2.9.0",
     "dvc>=3.0",
     "fsspec<2025",
+    "streamlit>=1.54.0",
 ]
