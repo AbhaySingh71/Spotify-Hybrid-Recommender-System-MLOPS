@@ -26,21 +26,18 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+          aws-region: us-east-1  
 
       - name: DVC Pull
-        run: |
-          dvc pull
+        run: uv run dvc pull
 
-      - name: Run Appllication
+      - name: Run Application
         run: |
-          nohup streamlit run app.py --server.port 8000 &
-          sleep 30 
+          uv run streamlit run app.py --server.port 8000 &
+          sleep 30
 
       - name: Test App
-        run: |
-          pytest test_app.py
-      
+        run: uv run pytest test_app.py
+
       - name: Stop Streamlit app
-        run: |
-          pkill -f "streamlit run"
+        run: pkill -f "streamlit run"
