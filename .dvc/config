@@ -1,4 +1,4 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = C:\Users\abhay\AppData\Local\Temp\Abhaystorage
+    url = s3://spotify-hybrid-reccomendation-remote

@@ -5,9 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "awscli>=1.43.5",
     "category-encoders>=2.9.0",
     "dask>=2026.1.2",
-    "dvc>=3.0",
+    "dvc[s3]>=3.0",
     "fsspec<2025",
     "streamlit>=1.54.0",
 ]
