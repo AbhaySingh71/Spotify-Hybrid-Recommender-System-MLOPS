@@ -12,3 +12,8 @@ dependencies = [
     "fsspec<2025",
     "streamlit>=1.54.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
