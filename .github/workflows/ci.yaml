@@ -83,8 +83,7 @@ jobs:
             aws deploy create-deployment \
             --application-name hybridrecommendationsystem \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name hybridrecsysdeploymentgroup \
+            --deployment-group-name hybridrecsysdeployementgroup \
             --s3-location bucket=hybrid-recsys-deployment-bucket,key=deployment.zip,bundleType=zip \
             --file-exists-behavior OVERWRITE \
             --region us-east-1  
-               
