@@ -1,6 +1,9 @@
 name: CI-CD
 
-on: push
+on:
+  push:
+    paths-ignore:
+      - "README.md"
 
 jobs:
   CI:
@@ -87,5 +90,3 @@ jobs:
             --s3-location bucket=hybrid-recsys-deployment-bucket,key=deployment.zip,bundleType=zip \
             --file-exists-behavior OVERWRITE \
             --region us-east-1  
-
-            
