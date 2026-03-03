@@ -1,16 +1,36 @@
+p align="center">
+  <a href="https://github.com/AbhaySingh71/Spotify-Hybrid-Recommender-System-MLOPS">
+    <img src="https://img.shields.io/github/stars/AbhaySingh71/Spotify-Hybrid-Recommender-System-MLOPS?style=social" alt="GitHub Stars">
+  </a>
+  <a href="https://hub.docker.com/repository/docker/abhaysingh71/spotify-recommender-system/general">
+    <img src="https://img.shields.io/docker/pulls/abhaysingh71/spotify-recommender-system" alt="Docker Pulls">
+  </a>
+</p>
+
 # Spotify Hybrid Recommendation System
 
-A music recommendation project that combines **content-based filtering** and **collaborative filtering** into a single **hybrid recommender**, served through a Streamlit app and packaged with an MLOps workflow (DVC + Docker + GitHub Actions + AWS deployment).
+A production-oriented music recommendation platform that combines **content-based filtering** and **collaborative filtering** into a **hybrid recommender**, delivered through a Streamlit application and operationalized with a modern MLOps stack: **DVC, Docker, GitHub Actions, Amazon ECR, AWS CodeDeploy, and EC2-based runtime infrastructure**.
 
 ## Overview
 
-This project recommends songs using two complementary signals:
+This system generates recommendations using complementary ML signals:
 
-- **Content-based filtering**: Similarity from song metadata and audio features.
-- **Collaborative filtering**: Similarity from user listening behavior (playcount interactions).
-- **Hybrid scoring**: Weighted combination of both similarity scores, controlled by a diversity slider in the UI.
+- **Content-based filtering**: Similarity across song metadata and audio attributes.
+- **Collaborative filtering**: Similarity from user-listening interaction behavior (`playcount`).
+- **Hybrid scoring**: Weighted blend of both similarity spaces, controlled by a user-facing diversity slider.
 
-The app automatically falls back to content-based recommendations when collaborative signals are unavailable for a selected track.
+The application gracefully falls back to content-based inference when collaborative signals are unavailable for a selected track.
+
+| ![Screenshot 1](assets/assest9.png) | ![Screenshot 2](assets/assest16.png) |
+|---------------------------------|---------------------------------|
+
+## Production Highlights
+
+- Zero-downtime deployment pattern with **Blue-Green** rollout support.
+- **Auto scaling** capable runtime using EC2 Auto Scaling Group.
+- **Fault tolerance** through load-balanced multi-instance serving and health-based replacement.
+- **Containerized deployment** with Docker images stored in Amazon ECR.
+- **Reproducible ML artifacts** and data lineage via DVC.
 
 ## Features
 
@@ -23,6 +43,89 @@ The app automatically falls back to content-based recommendations when collabora
   - runs app smoke tests,
   - builds and pushes a Docker image to ECR,
   - triggers AWS CodeDeploy.
+
+## MLOps Architecture
+
+### 1. Amazon ECR (Container Registry)
+
+- CI builds a versioned Docker image of the application runtime and model-serving code.
+- Image is pushed to **Amazon Elastic Container Registry (ECR)** as the deployable artifact.
+- ECR provides a secure and centralized artifact registry across environments.
+
+### 2. GitHub Actions CI/CD
+
+Defined in `.github/workflows/ci.yaml`, the pipeline automates:
+
+- source checkout,
+- Python + `uv` environment setup,
+- dependency installation,
+- `dvc pull` for tracked data/model artifacts,
+- Streamlit smoke validation via `pytest`,
+- Docker build + ECR push,
+- deployment package upload to S3,
+- deployment trigger via AWS CodeDeploy.
+
+This turns every eligible push into a reproducible delivery event.
+
+### 3. AWS CodeDeploy Integration
+
+- CodeDeploy orchestrates release execution using `appspec.yml` lifecycle hooks.
+- `BeforeInstall`: host bootstrap (`install_dependencies.sh`).
+- `ApplicationStart`: pulls the latest ECR image and starts/replaces the container (`start_docker.sh`).
+
+### 4. Blue-Green Deployment Strategy (Zero Downtime)
+
+- Production is modeled as two environments: **Blue (active)** and **Green (candidate)**.
+- New container revision is launched on Green capacity.
+- Health checks validate Green before traffic transition.
+- Traffic is shifted from Blue to Green only after successful validation.
+- If health checks fail, deployment can be rolled back to Blue to avoid user-visible downtime.
+
+### 5. EC2 Auto Scaling Group
+
+- Application instances can run as an **Auto Scaling Group (ASG)** for elastic capacity.
+- ASG scales out during demand spikes and scales in during low traffic windows.
+- Unhealthy instances are replaced automatically to maintain desired capacity.
+
+### 6. Application Load Balancer (Elastic Load Balancing)
+
+- **ALB** fronts application instances and distributes traffic across healthy targets.
+- Works with target groups to support Blue-Green traffic switching.
+- Enables high availability and smoother release transitions.
+
+### 7. Health Checks and Rollback Strategy
+
+- ALB and CodeDeploy health checks gate traffic progression.
+- Failed validation blocks or reverts rollout.
+- Rollback restores prior stable revision, minimizing service interruption and deployment risk.
+
+## AWS Infrastructure Architecture
+
+### Deployment Flow
+
+```text
+GitHub Repo
+   -> GitHub Actions CI
+   -> Docker Build
+   -> Amazon ECR (Image Registry)
+   -> AWS CodeDeploy (Release Orchestration)
+   -> EC2 / Auto Scaling Group (Runtime Hosts)
+   -> Application Load Balancer (Traffic Entry)
+   -> End Users
+```
+
+### Traffic Shifting in Blue-Green
+
+- Green environment is provisioned with the new version.
+- Validation and health checks run before exposure.
+- ALB target-group routing shifts traffic from Blue to Green.
+- On failure, traffic remains on or returns to Blue automatically.
+
+### High Availability and Scalability
+
+- Multi-instance serving behind ALB improves availability.
+- ASG enables horizontal scaling and self-healing.
+- Immutable container releases improve consistency across nodes.
 
 ## Project Structure
 
