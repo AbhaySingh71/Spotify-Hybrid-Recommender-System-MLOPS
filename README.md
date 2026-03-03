@@ -1,4 +1,4 @@
-p align="center">
+<p align="center">
   <a href="https://github.com/AbhaySingh71/Spotify-Hybrid-Recommender-System-MLOPS">
     <img src="https://img.shields.io/github/stars/AbhaySingh71/Spotify-Hybrid-Recommender-System-MLOPS?style=social" alt="GitHub Stars">
   </a>
