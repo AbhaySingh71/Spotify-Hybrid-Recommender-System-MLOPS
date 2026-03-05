@@ -1,0 +1,241 @@
+first create a s3 bucket for data versioning in AWS
+Create a user by IAM role Which get Access ID and Access password
+then authenticate in AWScli
+add Remote S3 and push the data update the cicd pipeline 
+
+NOw create a DOCKER file and build it and test properly locally
+create a AWS ECR and setup using the build in AWS commands 
+docker Push -d  --name hybrid_recsys -p 8000:8000 spotify_hybrid_resys:latest
+like docker pull hybrid_recsys -p 8000:8000 spotify_hybrid_resys:latest
+docker run -d  --name hybrid_recsys -p 8000:8000 spotify_hybrid_resys:latest
+update the CICD pipeline to automate this
+
+then pull the image from AWS ECR to check it is working or not 
+
+NOW AWS Codedeploy
+
+First create a role in IAM and attach S3 policy EC2 containerRegistry full access , Aws Ec2 codedeploy full access
+now go on intances click launch template 
+slect the os click Auto scaling guidance
+add key pair , add network setting by give full access only for study , add select role 
+
+add intructions
+#!/bin/bash
+
+# Update packages
+sudo apt update -y
+
+# Install ruby required for CodeDeploy
+sudo apt install ruby-full -y
+
+# Install wget
+sudo apt install wget -y
+
+# Go to ubuntu home directory
+cd /home/ubuntu
+
+# Download CodeDeploy agent (change region if needed)
+wget https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
+
+# Install agent
+chmod +x install
+sudo ./install auto
+
+# Start agent
+sudo systemctl start codedeploy-agent
+
+# Enable agent on boot
+sudo systemctl enable codedeploy-agent
+
+
+After creating launch template 
+launch Autoscaling group
+-> select availabily zones
+
+Attach Load balancer
+Load balancing Scheme -> Internet Facing 
+-> Turn on Health Check
+Add New target group
+
+select desired capacity
+-> min capacity and Max capacity
+
+now Create it 
+
+NOW CodeDeploy
+Create a IAM role -> Codedeploy -> Add code deploy Role
+name it & compute Platform
+Create deployment Group
+-> name it , Enter Service Role, select Deployment type like Bule/green
+-> ADD Auto scaling group, Select deployment configure
+-> attach load balacer
+
+Create a new s3 Bucket for Code deploy
+
+now open vscode attach appspec.yml
+-> Add deploy/scripts
+update CI/CD Role
+
+
+POTIFY HYBRID RECOMMENDER SYSTEM - COMPLETE AWS MLOPS DEPLOYMENT GUIDE
+
+PHASE 1: DATA VERSIONING USING AWS S3 + DVC
+
+1.  Create S3 Bucket
+
+-   Go to AWS Console → S3
+-   Create bucket (example: spotify-hybrid-recsys-data)
+-   Disable public access (recommended)
+-   Enable versioning (recommended)
+
+2.  Create IAM User
+
+-   Go to IAM → Users → Create User
+-   Attach Policy: AmazonS3FullAccess (for learning)
+-   Generate Access Key ID and Secret Access Key
+
+3.  Configure AWS CLI Run: aws configure
+
+Enter: - AWS Access Key - AWS Secret Key - Region (e.g., us-east-1) -
+Output format: json
+
+4.  Add DVC Remote dvc remote add -d myremote
+    s3://spotify-hybrid-recsys-data dvc remote modify myremote
+    access_key_id YOUR_ACCESS_KEY dvc remote modify myremote
+    secret_access_key YOUR_SECRET_KEY
+
+Push data: dvc push
+
+PHASE 2: DOCKERIZATION
+
+1.  Create Dockerfile
+
+FROM python:3.11-slim WORKDIR /app COPY requirements.txt . RUN pip
+install –no-cache-dir -r requirements.txt COPY . . EXPOSE 8000 CMD
+[“python”, “app.py”]
+
+2.  Build Docker Image docker build -t spotify_hybrid_resys:latest .
+
+3.  Test Locally docker run -d –name hybrid_recsys -p 8000:8000
+    spotify_hybrid_resys:latest
+
+Open: http://localhost:8000
+
+PHASE 3: AWS ECR SETUP
+
+1.  Create ECR Repository
+
+-   Go to AWS → ECR → Create Repository
+-   Name: spotify-hybrid-recsys
+
+2.  Authenticate Docker to ECR aws ecr get-login-password –region
+    us-east-1 | docker login –username AWS –password-stdin
+    .dkr.ecr.us-east-1.amazonaws.com
+
+3.  Tag Image docker tag spotify_hybrid_resys:latest
+    .dkr.ecr.us-east-1.amazonaws.com/spotify-hybrid-recsys:latest
+
+4.  Push Image docker push
+    .dkr.ecr.us-east-1.amazonaws.com/spotify-hybrid-recsys:latest
+
+5.  Test Pull docker pull
+    .dkr.ecr.us-east-1.amazonaws.com/spotify-hybrid-recsys:latest docker
+    run -d –name hybrid_recsys -p 8000:8000
+    .dkr.ecr.us-east-1.amazonaws.com/spotify-hybrid-recsys:latest
+
+PHASE 4: CI/CD PIPELINE (GitHub Actions)
+
+Pipeline Steps: 1. Checkout Code 2. Setup Python 3. Install Dependencies
+4. Run Tests 5. Build Docker Image 6. Login to ECR 7. Push to ECR 8.
+Upload artifacts to S3 for CodeDeploy
+
+PHASE 5: EC2 + AUTO SCALING + LOAD BALANCER
+
+1.  Create IAM Role for EC2 Attach Policies:
+
+-   AmazonS3FullAccess
+-   AmazonEC2ContainerRegistryFullAccess
+-   AmazonEC2FullAccess
+-   AWSCodeDeployFullAccess
+
+2.  Create Launch Template
+
+-   Select Ubuntu
+-   Enable Auto Scaling guidance
+-   Add Key Pair
+-   Allow all traffic (for study only)
+-   Attach IAM Role
+
+3.  Add User Data Script
+
+#!/bin/bash sudo apt update -y sudo apt install ruby-full -y sudo apt
+install wget -y cd /home/ubuntu wget
+https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
+chmod +x install sudo ./install auto sudo systemctl start
+codedeploy-agent sudo systemctl enable codedeploy-agent
+
+4.  Create Auto Scaling Group
+
+-   Select Launch Template
+-   Select Availability Zones
+-   Attach Load Balancer
+-   Enable Health Checks
+-   Create Target Group
+-   Set: Min: 1 Desired: 1 Max: 2
+
+PHASE 6: CODEDEPLOY (BLUE/GREEN DEPLOYMENT)
+
+1.  Create CodeDeploy Service Role
+
+-   IAM → Create Role → CodeDeploy
+-   Attach AWSCodeDeployRole
+
+2.  Create CodeDeploy Application
+
+-   Compute Platform: EC2/On-Prem
+
+3.  Create Deployment Group
+
+-   Deployment Type: Blue/Green
+-   Select Auto Scaling Group
+-   Attach Load Balancer
+-   Enable automatic rollback
+
+4.  Create S3 Bucket for CodeDeploy Artifacts Example:
+    spotify-hybrid-codedeploy-artifacts
+
+PHASE 7: APPSPEC FILE
+
+Create appspec.yml:
+
+version: 0.0 os: linux
+
+files: - source: / destination: /home/ubuntu/app
+
+hooks: AfterInstall: - location: deploy/scripts/install_dependencies.sh
+timeout: 300 runas: ubuntu
+
+ApplicationStart: - location: deploy/scripts/start_server.sh timeout:
+300 runas: ubuntu
+
+deploy/scripts/install_dependencies.sh:
+
+#!/bin/bash docker pull
+
+deploy/scripts/start_server.sh:
+
+#!/bin/bash docker stop hybrid_recsys || true docker rm hybrid_recsys ||
+true docker run -d –name hybrid_recsys -p 8000:8000
+
+FINAL DEPLOYMENT FLOW
+
+1.  Push code to GitHub
+2.  GitHub Actions builds Docker image
+3.  Pushes image to AWS ECR
+4.  Uploads artifacts to S3
+5.  CodeDeploy triggers Blue/Green deployment
+6.  Auto Scaling Group updates instances
+7.  Load Balancer shifts traffic
+8.  Application goes live in production
+
+END OF DOCUMENT
