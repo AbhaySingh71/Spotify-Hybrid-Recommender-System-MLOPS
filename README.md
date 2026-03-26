@@ -13,6 +13,8 @@ A production-oriented music recommendation platform that combines **content-base
 
 ## Overview
 
+![Screenshot 1](assets/Architecture_diagram.png)
+
 This system generates recommendations using complementary ML signals:
 
 - **Content-based filtering**: Similarity across song metadata and audio attributes.
